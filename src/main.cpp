@@ -31,6 +31,19 @@ int xApple, yApple;
 int ptr, nextPtr;
 int prevDir = 0;
 
+//pin ecran score
+int pinA = 0;
+int pinB = 1;
+int pinC = 2;
+int pinD = 4;
+int pinE = 5;
+int pinF = 6;
+int pinG = 7;
+int D1 = 8;
+int D2 = 9;
+// int D3 = 11;
+// int D4 = 12;
+
 float joyRawToPhys(int raw) { /* function joyRawToPhys */
  ////Joystick conversion rule
  float phys = map(raw, MIN_VAL, MAX_VAL, -100 + joyOffset, 100 + joyOffset) - joyOffset;
@@ -114,6 +127,16 @@ void setup() {
   for (int i = 0; i < NUM_JOY; i++) pinMode(joyPin[i], INPUT);
 
   spawnApple();
+
+  pinMode(pinA, OUTPUT);
+  pinMode(pinB, OUTPUT);
+  pinMode(pinC, OUTPUT);
+  pinMode(pinD, OUTPUT);
+  pinMode(pinE, OUTPUT);
+  pinMode(pinF, OUTPUT);
+  pinMode(pinG, OUTPUT);
+  pinMode(D1, OUTPUT);
+  pinMode(D2, OUTPUT);
 }
 
 void loop() {
@@ -149,5 +172,16 @@ void loop() {
       break; // The spot is empty, break out the for loop
     }
   }
+
+  digitalWrite(D1, HIGH);
+  digitalWrite(D2, LOW);
+  //0
+  digitalWrite(pinA, LOW);
+  digitalWrite(pinB, HIGH);
+  digitalWrite(pinC, LOW);
+  digitalWrite(pinD, LOW);
+  digitalWrite(pinE, HIGH);
+  digitalWrite(pinF, LOW);
+  digitalWrite(pinG, LOW);
 
 }
