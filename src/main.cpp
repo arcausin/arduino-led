@@ -3,6 +3,8 @@
 #include <Max72xxPanel.h>
 #include "Arduino.h"
 
+#define NOTE_C3  131
+
 //Constants
 #define NUM_JOY 2
 #define MIN_VAL 0
@@ -11,6 +13,7 @@
 const int joyPin [2] = {A0, A1};
 const int joyBtn  = 2;
 const int joyOffset  = 0;
+const int buzPin  = 4;
 //Variables
 int joyVal [NUM_JOY] = {0, 0};
 
@@ -106,6 +109,7 @@ void checkCollisionWithApple() {
     score++;
     spawnApple();
     Serial.print(score);
+    tone(buzPin, NOTE_C3, 200);
   }
 }
 
@@ -137,6 +141,7 @@ void setup() {
   pinMode(pinG, OUTPUT);
   pinMode(D1, OUTPUT);
   pinMode(D2, OUTPUT);
+  pinMode(41, OUTPUT);
 }
 
 void loop() {
@@ -183,5 +188,6 @@ void loop() {
   digitalWrite(pinE, HIGH);
   digitalWrite(pinF, LOW);
   digitalWrite(pinG, LOW);
+  digitalWrite(41, HIGH);
 
 }
