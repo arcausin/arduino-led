@@ -15,6 +15,12 @@ const int joyBtn = 2;
 const int joyOffset = 0;
 const int buzPin = 4;
 const int btnPin = A2;
+
+int life = 3;
+const int lifeLed1 = 3;
+const int lifeLed2 = 5;
+const int lifeLed3 = 6;
+
 // Variables
 int btnVal = 0;
 int joyVal[NUM_JOY] = {0, 0};
@@ -144,6 +150,15 @@ int next(int ptr)
   return (ptr + 1) % length;
 }
 
+void spawnSnake() {
+  for (ptr = 0; ptr < length; ptr++)
+  {
+    x[ptr] = numberOfHorizontalDisplays * 8 / 2;
+    y[ptr] = numberOfVerticalDisplays * 8 / 2;
+  }
+  nextPtr = 0;
+}
+
 void spawnApple()
 {
   xApple = random(8);
@@ -167,16 +182,27 @@ void checkCollisionWithApple()
   }
 }
 
+void collisionSnakeWall() {
+  // for(int i = 0; i < length; i++) {
+
+  //   for(int h = 0; h < length; h++) {
+
+  //     if(i != h && x[i] == x[h] && y[i] == y[h] && ((x[ptr] == 7 || x[ptr] == 0) || ( y[ptr] == 7 || y[ptr] == 0)) ) {
+  //       life--;
+  //       Serial.print("Collision");
+  //       // spawnSnake();
+  //     }
+
+  //   }
+
+  // }
+}
+
 void setup()
 {
   matrix.setIntensity(4);
   // Reset all variables
-  for (ptr = 0; ptr < length; ptr++)
-  {
-    x[ptr] = numberOfHorizontalDisplays * 8 / 2;
-    y[ptr] = numberOfVerticalDisplays * 8 / 2;
-  }
-  nextPtr = 0;
+  spawnSnake();
 
   randomSeed(analogRead(pinRandom)); // Initialize random generator
 
@@ -190,10 +216,17 @@ void setup()
   spawnApple();
 
   pinMode(btnPin, INPUT_PULLUP);
+  pinMode(lifeLed1, OUTPUT);
+  pinMode(lifeLed2, OUTPUT);
+  pinMode(lifeLed3, OUTPUT);
 }
 
 void loop()
 {
+  digitalWrite(lifeLed1, life >= 1 ? HIGH : LOW);
+  digitalWrite(lifeLed2, life >= 2 ? HIGH : LOW );
+  digitalWrite(lifeLed3, life >= 3 ? HIGH : LOW);
+
   detectScoreButton();
 
   if (displayScore)
