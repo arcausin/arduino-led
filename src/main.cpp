@@ -16,10 +16,10 @@ const int joyOffset = 0;
 const int buzPin = 4;
 const int btnPin = A2;
 
-int life = 3;
-const int lifeLed1 = 3;
-const int lifeLed2 = 5;
-const int lifeLed3 = 6;
+const int timeLed1 = 3;
+const int timeLed2 = 5;
+const int timeLed3 = 6;
+
 
 // Variables
 int btnVal = 0;
@@ -47,19 +47,26 @@ String scoreText = "Score ";
 int scoreSpacer = 1;
 int scoreWidth = 5 + scoreSpacer; // The font width is 5 pixels
 
+bool displayEndGame = false;
+const unsigned int endGame = 10000;
+unsigned int timer = 10000;
+String restartText = "Press button to restart ";
+int restartSpacer = 1;
+int restartWidth = 5 + restartSpacer; // The font width is 5 pixels
+
 void detectScoreButton()
 {
   btnVal = analogRead(btnPin);
   if (btnVal < 200)
   {
     Serial.println(displayScore ? "DISPLAY": "NON");
-    scoreText =  String(score) + " ";
     displayScore = true;
   }
 }
 
 void mountScore()
 {
+  scoreText =  String(score) + " ";
   for (int i = 0; i < scoreWidth * scoreText.length() + matrix.width() - 1 - scoreSpacer; i++)
   {
 
@@ -87,6 +94,33 @@ void mountScore()
   }
 }
 
+void mountRestartMenu() {
+  for (int i = 0; i < restartWidth * restartText.length() + matrix.width() - 1 - restartSpacer; i++)
+  {
+
+    matrix.fillScreen(LOW);
+
+    int letter = i / restartWidth;
+    int x = (matrix.width() - 1) - i % restartWidth;
+    int y = (matrix.height() - 8) / 2; // center the text vertically
+
+    while (x + restartWidth - restartSpacer >= 0 && letter >= 0)
+    {
+      if (letter < restartText.length())
+      {
+        matrix.drawChar(x, y, restartText[letter], HIGH, LOW, 1);
+      }
+
+      letter--;
+      x -= restartWidth;
+    }
+
+    matrix.write(); // Send bitmap to display
+
+    delay(80);
+  }
+}
+
 float joyRawToPhys(int raw)
 { /* function joyRawToPhys */
   ////Joystick conversion rule
@@ -106,19 +140,19 @@ int readJoystick()
 
   if (yMove >= 90)
   {
-    prevDir = 0;
+    prevDir = 1;
   }
   else if (yMove <= -90)
   {
-    prevDir = 1;
+    prevDir = 0;
   }
   else if (xMove <= -90)
   {
-    prevDir = 2;
+    prevDir = 3;
   }
   else if (xMove >= 90)
   {
-    prevDir = 3;
+    prevDir = 2;
   }
   // Serial.print(F("prevDir")), Serial.print(F(" : ")); Serial.println(prevDir);
   return prevDir;
@@ -167,12 +201,12 @@ void spawnApple()
 
 void checkCollisionWithApple()
 {
-  Serial.print("x : ");
-  Serial.print(x[ptr]);
-  Serial.print("\n");
-  Serial.print("y : ");
-  Serial.print(y[ptr]);
-  Serial.print("\n");
+  // Serial.print("x : ");
+  // Serial.print(x[ptr]);
+  // Serial.print("\n");
+  // Serial.print("y : ");
+  // Serial.print(y[ptr]);
+  // Serial.print("\n");
   if (x[ptr] == xApple && y[ptr] == yApple)
   {
     score++;
@@ -182,20 +216,9 @@ void checkCollisionWithApple()
   }
 }
 
-void collisionSnakeWall() {
-  // for(int i = 0; i < length; i++) {
-
-  //   for(int h = 0; h < length; h++) {
-
-  //     if(i != h && x[i] == x[h] && y[i] == y[h] && ((x[ptr] == 7 || x[ptr] == 0) || ( y[ptr] == 7 || y[ptr] == 0)) ) {
-  //       life--;
-  //       Serial.print("Collision");
-  //       // spawnSnake();
-  //     }
-
-  //   }
-
-  // }
+void onEndGame() {
+  mountScore();
+  mountRestartMenu();
 }
 
 void setup()
@@ -216,24 +239,32 @@ void setup()
   spawnApple();
 
   pinMode(btnPin, INPUT_PULLUP);
-  pinMode(lifeLed1, OUTPUT);
-  pinMode(lifeLed2, OUTPUT);
-  pinMode(lifeLed3, OUTPUT);
+  pinMode(timeLed1, OUTPUT);
+  pinMode(timeLed2, OUTPUT);
+  pinMode(timeLed3, OUTPUT);
 }
 
 void loop()
 {
-  digitalWrite(lifeLed1, life >= 1 ? HIGH : LOW);
-  digitalWrite(lifeLed2, life >= 2 ? HIGH : LOW );
-  digitalWrite(lifeLed3, life >= 3 ? HIGH : LOW);
+  // Leds for timer
+  digitalWrite(timeLed1, timer > 0 ? HIGH : LOW);
+  digitalWrite(timeLed2, (endGame / 3) < timer ? HIGH : LOW );
+  digitalWrite(timeLed3, ( endGame / 3 ) * 2 < timer ? HIGH : LOW);
 
   detectScoreButton();
 
+  if(displayEndGame) {
+    onEndGame();
+    return;
+  }
+
+  // Score menu 
   if (displayScore)
   {
     mountScore();
     return;
   }
+
   // Shift pointer to the next segment
   ptr = nextPtr;
   nextPtr = next(ptr);
@@ -247,6 +278,14 @@ void loop()
   checkCollisionWithApple();
 
   delay(wait);
+
+  if(timer >= wait) {
+    timer -= wait;
+  }
+  else {
+    timer = 0;
+    displayEndGame = true;
+  }
 
   if (!occupied(nextPtr))
   {
